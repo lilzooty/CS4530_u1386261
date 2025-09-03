@@ -25,7 +25,7 @@ class ButtonClickedActivity : AppCompatActivity() {
         val buttonText = intent.getStringExtra("button_text")
         textView.text = buttonText
 
-        // closes the current activity, going back to the main activity screen
+        // sets the back button to close the current activity, going back to the main activity screen
         val backButton: Button = findViewById(R.id.backButton)
         backButton.setOnClickListener {
             finish()
