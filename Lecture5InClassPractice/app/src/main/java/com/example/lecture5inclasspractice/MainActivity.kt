@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "Hello $name!",
-        modifier = modifier.padding(20.dp)x 
+        modifier = modifier.padding(20.dp)
     )
 }
 
