@@ -3,45 +3,202 @@ package com.example.a2courseviewereditorapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.a2courseviewereditorapp.ui.theme.A2CourseViewerEditorAppTheme
+import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Delete
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            A2CourseViewerEditorAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            MaterialTheme {
+                CourseApp()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun CourseApp(viewModel: CourseViewModel = remember { CourseViewModel() }) {
+    val showAdd by viewModel.showAddDialog
+    val showEdit by viewModel.showEditDialog
+    val showDetail by viewModel.showDetail
+    val selectedCourse by viewModel.selectedCourse
+    //when user clicks on a course to show details
+    if (showDetail && selectedCourse != null) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(onClick = { viewModel.showDetail.value = false }) {
+                Text("Back")
+            }
+            Text("Department: ${selectedCourse!!.department}")
+            Text("Course Number: ${selectedCourse!!.courseNumber}")
+            Text("Location: ${selectedCourse!!.location}")
+        }
+        //otherwise it should show just the list of courses screen
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Courses", style = MaterialTheme.typography.headlineMedium)
+                FloatingActionButton(
+                    onClick = { viewModel.showAddDialog.value = true },
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add")
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(viewModel.courses) { course ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { viewModel.selectCourse(course) }
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("${course.department} ${course.courseNumber}")
+                            Row {
+                                IconButton(onClick = {
+                                    viewModel.selectedCourse.value = course
+                                    viewModel.showEditDialog.value = true
+                                }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "Edit")
+                                }
+                                IconButton(onClick = { viewModel.deleteCourse(course) }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Delete")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    //when the user clicks to add a course
+    if (showAdd) {
+        var department by remember { mutableStateOf("") }
+        var courseNumber by remember { mutableStateOf("") }
+        var location by remember { mutableStateOf("") }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    A2CourseViewerEditorAppTheme {
-        Greeting("Android")
+        AlertDialog(
+            onDismissRequest = { viewModel.showAddDialog.value = false },
+            title = { Text("Add Course") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = department,
+                        onValueChange = { department = it },
+                        label = { Text("Department") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = courseNumber,
+                        onValueChange = { courseNumber = it },
+                        label = { Text("Course Number") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = location,
+                        onValueChange = { location = it },
+                        label = { Text("Location") }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (department.isNotBlank() && courseNumber.isNotBlank() && location.isNotBlank()) {
+                            viewModel.addCourse(Course(department, courseNumber, location))
+                            viewModel.showAddDialog.value = false
+                        }
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.showAddDialog.value = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+    //when user wants to edit a course
+    if (showEdit && selectedCourse != null) {
+        var department by remember { mutableStateOf(selectedCourse!!.department) }
+        var courseNumber by remember { mutableStateOf(selectedCourse!!.courseNumber) }
+        var location by remember { mutableStateOf(selectedCourse!!.location) }
+
+        AlertDialog(
+            onDismissRequest = { viewModel.showEditDialog.value = false },
+            title = { Text("Edit Course") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = department,
+                        onValueChange = { department = it },
+                        label = { Text("Department") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = courseNumber,
+                        onValueChange = { courseNumber = it },
+                        label = { Text("Course Number") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = location,
+                        onValueChange = { location = it },
+                        label = { Text("Location") }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (department.isNotBlank() && courseNumber.isNotBlank() && location.isNotBlank()) {
+                            viewModel.editCourse(selectedCourse!!, Course(department, courseNumber, location))
+                            viewModel.showEditDialog.value = false
+                        }
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.showEditDialog.value = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
