@@ -1,10 +1,11 @@
+package com.example.a2courseviewereditorapp
+
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.a2courseviewereditorapp.Course
 import kotlinx.coroutines.flow.Flow
 
 @Dao
