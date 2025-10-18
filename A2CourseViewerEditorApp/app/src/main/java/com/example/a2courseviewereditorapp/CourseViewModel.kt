@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 class CourseViewModel(private val repository: CourseRepository) : ViewModel() {
 
-    // Collect all courses from the repository as a StateFlow (live-updating stream)
+    //get all courses from the repository as a StateFlow
     val courses: StateFlow<List<Course>> = repository.allCourses
         .stateIn(
             scope = viewModelScope,
@@ -18,34 +18,29 @@ class CourseViewModel(private val repository: CourseRepository) : ViewModel() {
             initialValue = emptyList()
         )
 
-    // UI states
     var selectedCourse = androidx.compose.runtime.mutableStateOf<Course?>(null)
     var showAddDialog = androidx.compose.runtime.mutableStateOf(false)
     var showEditDialog = androidx.compose.runtime.mutableStateOf(false)
     var showDetail = androidx.compose.runtime.mutableStateOf(false)
 
-    // Add new course
     fun addCourse(course: Course) {
         viewModelScope.launch {
             repository.insertCourse(course)
         }
     }
 
-    // Update course
     fun editCourse(course: Course) {
         viewModelScope.launch {
             repository.updateCourse(course)
         }
     }
 
-    // Delete course
     fun deleteCourse(course: Course) {
         viewModelScope.launch {
             repository.deleteCourse(course)
         }
     }
 
-    // Select a course for detail view
     fun selectCourse(course: Course) {
         selectedCourse.value = course
         showDetail.value = true

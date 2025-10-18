@@ -1,40 +1,48 @@
 package com.example.a2courseviewereditorapp
 
+import CourseRepository
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.remember
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Delete
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: CourseViewModel by viewModels {
+        val database = CourseDatabase.getDatabase(applicationContext)
+        val repository = CourseRepository(database.courseDao())
+        CourseViewModelFactory(repository)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                CourseApp()
+                CourseApp(viewModel)
             }
         }
     }
 }
 
 @Composable
-fun CourseApp(viewModel: CourseViewModel = remember { CourseViewModel() }) {
+fun CourseApp(viewModel: CourseViewModel) {
     val showAdd by viewModel.showAddDialog
     val showEdit by viewModel.showEditDialog
     val showDetail by viewModel.showDetail
     val selectedCourse by viewModel.selectedCourse
-    //when user clicks on a course to show details
+    val courses by viewModel.courses.collectAsState()
+
     if (showDetail && selectedCourse != null) {
         Column(
             modifier = Modifier
@@ -49,7 +57,6 @@ fun CourseApp(viewModel: CourseViewModel = remember { CourseViewModel() }) {
             Text("Course Number: ${selectedCourse!!.courseNumber}")
             Text("Location: ${selectedCourse!!.location}")
         }
-        //otherwise it should show just the list of courses screen
     } else {
         Column(
             modifier = Modifier
@@ -70,10 +77,8 @@ fun CourseApp(viewModel: CourseViewModel = remember { CourseViewModel() }) {
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(viewModel.courses) { course ->
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(courses) { course ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { viewModel.selectCourse(course) }
@@ -103,7 +108,7 @@ fun CourseApp(viewModel: CourseViewModel = remember { CourseViewModel() }) {
             }
         }
     }
-    //when the user clicks to add a course
+
     if (showAdd) {
         var department by remember { mutableStateOf("") }
         var courseNumber by remember { mutableStateOf("") }
@@ -137,7 +142,10 @@ fun CourseApp(viewModel: CourseViewModel = remember { CourseViewModel() }) {
                 TextButton(
                     onClick = {
                         if (department.isNotBlank() && courseNumber.isNotBlank() && location.isNotBlank()) {
-                            viewModel.addCourse(Course(department, courseNumber, location))
+                            viewModel.addCourse(Course(
+                                department = department,
+                                courseNumber = courseNumber,
+                                location = location))
                             viewModel.showAddDialog.value = false
                         }
                     }
@@ -152,7 +160,7 @@ fun CourseApp(viewModel: CourseViewModel = remember { CourseViewModel() }) {
             }
         )
     }
-    //when user wants to edit a course
+
     if (showEdit && selectedCourse != null) {
         var department by remember { mutableStateOf(selectedCourse!!.department) }
         var courseNumber by remember { mutableStateOf(selectedCourse!!.courseNumber) }
@@ -186,7 +194,13 @@ fun CourseApp(viewModel: CourseViewModel = remember { CourseViewModel() }) {
                 TextButton(
                     onClick = {
                         if (department.isNotBlank() && courseNumber.isNotBlank() && location.isNotBlank()) {
-                            viewModel.editCourse(selectedCourse!!, Course(department, courseNumber, location))
+                            viewModel.editCourse(
+                                selectedCourse!!.copy(
+                                    department = department,
+                                    courseNumber = courseNumber,
+                                    location = location
+                                )
+                            )
                             viewModel.showEditDialog.value = false
                         }
                     }
