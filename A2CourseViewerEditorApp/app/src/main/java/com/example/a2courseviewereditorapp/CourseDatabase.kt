@@ -1,6 +1,5 @@
 package com.example.a2courseviewereditorapp
 
-
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
