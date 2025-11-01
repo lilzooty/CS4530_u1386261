@@ -14,7 +14,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 class MainActivity : ComponentActivity() {
-
     private lateinit var viewModel: FunFactViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
