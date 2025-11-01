@@ -59,7 +59,8 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:3.3.1")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.1")
 
-    implementation(libs.androidx.lifecycle.runtime.ktx) //probably right
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.4")
+
     implementation("androidx.room:room-runtime:2.8.3")
     implementation("androidx.room:room-ktx:2.8.3")
     ksp("androidx.room:room-compiler:2.8.3")
