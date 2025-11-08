@@ -16,9 +16,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 class MainActivity : ComponentActivity() {
     private val viewModel: MarbleViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +32,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             Surface(
                 modifier = Modifier.fillMaxSize(),
+                 color = MaterialTheme.colorScheme.background
             ) {
                 MarbleScreen(viewModel)
             }
@@ -50,26 +53,30 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MarbleScreen(viewModel: MarbleViewModel) {
     val marbleState by viewModel.marbleState.collectAsState()
+    val density = LocalDensity.current
+    val marbleRadiusPx = 50F      // in pixels
+    val marbleRadiusDp = with(density) { marbleRadiusPx.toDp() }
 
-    BoxWithConstraints(modifier = Modifier
-        .fillMaxSize()
-        .background(Color.Black)
-        .onSizeChanged { size ->
-            viewModel.updateScreenConstraints(
-                size.width.toFloat(),
-                size.height.toFloat()
-            )
-        }
-    )
-    {
-        val maxWidth = maxWidth
-        val maxHeight = maxHeight
-        viewModel.updateScreenConstraints(maxWidth.value, maxHeight.value)
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        // Convert Compose's maxWidth/maxHeight from dp → pixels for the ViewModel
+        val screenWidthPx = with(density) { maxWidth.toPx() }
+        val screenHeightPx = with(density) { maxHeight.toPx() }
 
+        // Update the VM once per composition with pixel sizes
+        viewModel.updateScreenConstraints(screenWidthPx, screenHeightPx)
+
+        // Draw the marble using the same radius
         Box(
             modifier = Modifier
-                .offset((marbleState.x - 20).dp, (marbleState.y - 20).dp)
-                .size(40.dp)
+                .offset(
+                    x = with(density) { (marbleState.x - marbleRadiusPx).toDp() },
+                    y = with(density) { (marbleState.y - marbleRadiusPx).toDp() }
+                )
+                .size(marbleRadiusDp * 2)
                 .background(Color.Magenta, CircleShape)
         )
     }
