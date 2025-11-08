@@ -1,5 +1,6 @@
 package com.example.a5marblegame
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 class MainActivity : ComponentActivity() {
@@ -23,6 +25,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         // Initialize the view model with sensor manager
         viewModel.initialize(this)
@@ -52,24 +55,26 @@ class MainActivity : ComponentActivity() {
 fun MarbleScreen(viewModel: MarbleViewModel) {
     val marbleState by viewModel.marbleState.collectAsState()
 
-    BoxWithConstraints(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+    BoxWithConstraints(modifier = Modifier
+        .fillMaxSize()
+        .background(Color(0xFFF5F5F5))
+        .onSizeChanged { size ->
+            viewModel.updateScreenConstraints(
+                size.width.toFloat(),
+                size.height.toFloat()
+            )
+        }
+    )
+    {
         val maxWidth = maxWidth
         val maxHeight = maxHeight
-
         viewModel.updateScreenConstraints(maxWidth.value, maxHeight.value)
 
-
-        Text(
-            text = "tilt your device to move the marble",
-            modifier = Modifier.align(Alignment.TopCenter).padding(16.dp),
-            color = Color.DarkGray
-        )
         Box(
             modifier = Modifier
-                .offset(marbleState.x.dp, marbleState.y.dp)
+                .offset((marbleState.x - 20).dp, (marbleState.y - 20).dp)
                 .size(40.dp)
                 .background(Color.Magenta, CircleShape)
         )
-
     }
 }
