@@ -15,9 +15,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
+
 class MainActivity : ComponentActivity() {
     private val viewModel: MarbleViewModel by viewModels()
 
@@ -54,7 +53,7 @@ class MainActivity : ComponentActivity() {
 fun MarbleScreen(viewModel: MarbleViewModel) {
     val marbleState by viewModel.marbleState.collectAsState()
     val density = LocalDensity.current
-    val marbleRadiusPx = 50F      // in pixels
+    val marbleRadiusPx = 50F
     val marbleRadiusDp = with(density) { marbleRadiusPx.toDp() }
 
     BoxWithConstraints(
@@ -62,7 +61,7 @@ fun MarbleScreen(viewModel: MarbleViewModel) {
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Convert Compose's maxWidth/maxHeight from dp → pixels for the ViewModel
+
         val screenWidthPx = with(density) { maxWidth.toPx() }
         val screenHeightPx = with(density) { maxHeight.toPx() }
 
