@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class MarbleViewModel : ViewModel(), SensorEventListener{
     // Screen boundaries
-    private var maxX = null
-    private var maxY = null
+    private var maxX: Float? = null
+    private var maxY: Float? = null
     private val marbleSize = 40f
 
     // Sensor variables
@@ -39,6 +39,27 @@ class MarbleViewModel : ViewModel(), SensorEventListener{
         } else {
             sensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         }
+    }
+
+    fun updateScreenConstraints(width: Float, height: Float) {
+        maxX = width
+        maxY = height
+    }
+
+
+
+    fun registerSensor() {
+        sensor?.let {
+            sensorManager?.registerListener(
+                this,           // Who listens (this ViewModel)
+                it,            // Which sensor
+                SensorManager.SENSOR_DELAY_GAME  // How fast
+            )
+        }
+    }
+
+    fun unregisterSensor() {
+        sensorManager?.unregisterListener(this)
     }
 
 
