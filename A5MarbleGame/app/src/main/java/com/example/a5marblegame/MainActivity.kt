@@ -30,7 +30,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
             ) {
                 MarbleScreen(viewModel)
             }
@@ -54,7 +53,7 @@ fun MarbleScreen(viewModel: MarbleViewModel) {
 
     BoxWithConstraints(modifier = Modifier
         .fillMaxSize()
-        .background(Color(0xFFF5F5F5))
+        .background(Color.Black)
         .onSizeChanged { size ->
             viewModel.updateScreenConstraints(
                 size.width.toFloat(),
